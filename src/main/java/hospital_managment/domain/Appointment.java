@@ -4,33 +4,30 @@ import java.time.*;
 
 public class Appointment extends BaseEntity {
 
-  public Patient patient;
-  public Doctor doctor;
-  /** When the appointment is scheduled to start (with timezone). */
-  private ZonedDateTime appointmentDateTime;
-  /** When the request was created (UTC instant). */
-  private Instant createdAt;
-  /** When the appointment was confirmed by the doctor (UTC instant). */
-  private Instant confirmedAt;
-  private String notes;
+  private Patient patient;
+  private Doctor doctor;
+  private Treatment treatment;
+  private LocalDate appointmentDate;
+  private LocalTime appointmentTime;
+  private String rejectedReason;
+  private String fallbackAction;
+  private String fallbackTargetId;
+  private String doctorNotes;
+  private String patientNotes;
+  //TODO finelise patientNotes
   private AppointmentStatus status = AppointmentStatus.REQUESTED;
 
-  public enum AppointmentStatus { REQUESTED, CONFIRMED, REJECTED, COMPLETED, CANCELLED }
+  public enum AppointmentStatus { REQUESTED, COMPLETED, CANCELLED }
 
-  public Appointment() {}
+  public Appointment() {}  
 
-  /**
-   * Create a new appointment request by a patient for a specific zoned date/time.
-   * createdAt is stored as UTC Instant for auditing and easy comparisons.
-   */
-  public static Appointment requestAppointment(Patient patient, ZonedDateTime when, String notes) {
+  public Appointment(Patient patient, LocalDate date, LocalTime time, String doctorNotes, Doctor doctor) {
     Appointment a = new Appointment();
     a.patient = patient;
-    a.appointmentDateTime = when;
-    a.notes = notes;
-    a.createdAt = Instant.now();
+    a.appointmentDate = date;
+    a.appointmentTime = time;
+    a.doctorNotes = doctorNotes;
     a.status = AppointmentStatus.REQUESTED;
-    return a;
   }
 
   public void setPatient (Patient newVar) {
@@ -49,35 +46,52 @@ public class Appointment extends BaseEntity {
     return doctor;
   }
 
+  public void setTreatment (Treatment newVar) {
+    treatment = newVar;
+  }
+
+  public Treatment getTreatment () {
+    return treatment;
+  }
+
+  public void setPatientNotes(String newVar){
+    patientNotes = newVar;
+  }
+
+  public String getPatientNotes(){
+    return patientNotes;
+  }
+
   public void setDate (LocalDate newVar) {
-    if (newVar == null) {
-      this.appointmentDateTime = null;
-    } else if (this.appointmentDateTime == null) {
-      // preserve local date, default to start of day in system zone
-      this.appointmentDateTime = newVar.atStartOfDay(ZoneId.systemDefault());
+    if (newVar != null) {
+      this.appointmentDate = newVar;
     } else {
-      this.appointmentDateTime = ZonedDateTime.of(newVar, this.appointmentDateTime.toLocalTime(), this.appointmentDateTime.getZone());
+      this.appointmentDate = LocalDate.now();
     }
   }
 
   public LocalDate getDate () {
-    return appointmentDateTime == null ? null : appointmentDateTime.toLocalDate();
+    return appointmentDate;
   }
 
-  public void setAppointmentDateTime(ZonedDateTime when) {
-    this.appointmentDateTime = when;
+  public void setTime (LocalDate newTime) {
+    if (newTime != null) {
+      this.appointmentDate = newTime;
+    } else {
+      this.appointmentDate = LocalDate.now();
+    }
   }
 
-  public ZonedDateTime getAppointmentDateTime() {
-    return appointmentDateTime;
+  public LocalTime getTime(){
+    return appointmentTime;
   }
 
   public void setNotes (String newVar) {
-    notes = newVar;
+    doctorNotes = newVar;
   }
 
   public String getNotes () {
-    return notes;
+    return doctorNotes;
   }
 
   public void setStatus(AppointmentStatus s) {
@@ -88,23 +102,6 @@ public class Appointment extends BaseEntity {
     return status;
   }
 
-  public void confirm() {
-    if (status == AppointmentStatus.CANCELLED || status == AppointmentStatus.COMPLETED) return;
-    this.status = AppointmentStatus.CONFIRMED;
-    this.confirmedAt = Instant.now();
-  }
-
-  /**
-   * Confirm appointment and set the doctor who confirmed it. Returns true if confirmation succeeded.
-   */
-  public boolean confirmBy(Doctor doctor) {
-    if (this.status != AppointmentStatus.REQUESTED) return false;
-    this.doctor = doctor;
-    this.status = AppointmentStatus.CONFIRMED;
-    this.confirmedAt = Instant.now();
-    return true;
-  }
-
   public void complete() {
     status = AppointmentStatus.COMPLETED;
   }
@@ -113,16 +110,15 @@ public class Appointment extends BaseEntity {
     status = AppointmentStatus.CANCELLED;
   }
 
-  public boolean isInFuture() {
-    if (appointmentDateTime == null) return false;
-    return appointmentDateTime.toInstant().isAfter(Instant.now()) || appointmentDateTime.toLocalDate().isEqual(LocalDate.now());
-  }
+  public String getRejectedReason() { return rejectedReason; }
+  public String getFallbackAction() { return fallbackAction; }
+  public String getFallbackTargetId() { return fallbackTargetId; }
 
   @Override
   public String toString() {
-    return String.format("Appointment{id=%d date=%s patient=%s doctor=%s status=%s createdAt=%s}", id,
-      (appointmentDateTime == null ? "null" : appointmentDateTime.toString()), (patient == null ? "null" : patient.getId()),
-      (doctor == null ? "null" : doctor.getId()), status, (createdAt == null ? "null" : createdAt.toString()));
+    return String.format("Appointment{id=%d date=%s time=%s patient=%s doctor=%s status=%s}", id,
+      appointmentDate.toString(), appointmentTime.toString(), (patient == null ? "null" : patient.getId()),
+      (doctor == null ? "null" : doctor.getId()), status);
   }
 
 }
