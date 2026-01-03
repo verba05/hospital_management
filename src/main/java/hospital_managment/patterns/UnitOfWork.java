@@ -31,6 +31,14 @@ public class UnitOfWork {
         return identityMap;
     }
 
+    public RepositoryRegistry getRegistry() {
+        return registry;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
     public void registerNew(BaseEntity entity) {
         newEntities.computeIfAbsent(entity.getClass(), k -> new ArrayList<>()).add(entity);
     }
@@ -50,10 +58,16 @@ public class UnitOfWork {
             updateDirty();
             deleteRemoved();
             connection.commit();
-            clearAll();
         } catch (Exception e) {
-            rollback();
+            e.printStackTrace();
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackEx) {
+                throw new RuntimeException("Rollback failed", rollbackEx);
+            }
             throw new RuntimeException("UnitOfWork commit failed, rolled back.", e);
+        } finally {
+            clearAll();
         }
     }
 
@@ -75,15 +89,57 @@ public class UnitOfWork {
     }
 
     private <T extends BaseEntity> void insertNew() throws Exception {
+        Class<?>[] insertionOrder = {
+            Class.forName("hospital_managment.domain.Hospital"),
+            Class.forName("hospital_managment.domain.User"),
+            Class.forName("hospital_managment.domain.Patient"),
+            Class.forName("hospital_managment.domain.Doctor"),
+            Class.forName("hospital_managment.domain.Admin"),
+            Class.forName("hospital_managment.domain.EmailVerificationToken"),
+            Class.forName("hospital_managment.domain.Appointment"),
+            Class.forName("hospital_managment.domain.Treatment")
+        };
+        
+        for (Class<?> orderedType : insertionOrder) {
+            if (newEntities.containsKey(orderedType)) {
+                Class<T> type = (Class<T>) orderedType;
+                
+                Repository<T> repo = registry.getRepository(type);
+                if (repo == null) {
+                    throw new RuntimeException("No repository registered for type: " + type.getSimpleName());
+                }
+
+                for (BaseEntity e : newEntities.get(type)) {
+                    T entity = type.cast(e);
+                    repo.insert(entity, connection);
+                    entity.markSaved();
+                    identityMap.put(type, entity.getId() * 1L, entity);
+                }
+            }
+        }
+        
         for (var entry : newEntities.entrySet()) {
             Class<T> type = (Class<T>) entry.getKey();
-            Repository<T> repo = registry.getRepository(type);
-
-            for (BaseEntity e : entry.getValue()) {
-                T entity = type.cast(e);
-                repo.insert(entity);
-                entity.markSaved();
-                identityMap.put(type, entity.getId() * 1L, entity);
+            boolean alreadyProcessed = false;
+            for (Class<?> orderedType : insertionOrder) {
+                if (orderedType.equals(type)) {
+                    alreadyProcessed = true;
+                    break;
+                }
+            }
+            
+            if (!alreadyProcessed) {
+                Repository<T> repo = registry.getRepository(type);
+                if (repo == null) {
+                    throw new RuntimeException("No repository registered for type: " + type.getSimpleName());
+                }
+                
+                for (BaseEntity e : entry.getValue()) {
+                    T entity = type.cast(e);
+                    repo.insert(entity, connection);
+                    entity.markSaved();
+                    identityMap.put(type, entity.getId() * 1L, entity);
+                }
             }
         }
     }
@@ -95,7 +151,7 @@ public class UnitOfWork {
 
             for (BaseEntity e : entry.getValue()) {
                 T entity = type.cast(e);
-                repo.update(entity);
+                repo.update(entity, connection);
                 entity.markSaved();
                 identityMap.put(type, entity.getId() * 1L, entity);
             }
@@ -109,7 +165,7 @@ public class UnitOfWork {
 
             for (BaseEntity e : entry.getValue()) {
                 T entity = type.cast(e);
-                repo.delete(entity);
+                repo.delete(entity, connection);
                 identityMap.remove(type, entity.getId() * 1L);
             }
         }
