@@ -1,10 +1,5 @@
 package hospital_managment.domain;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
 public class User extends BaseEntity {
 
   protected String name;
@@ -13,8 +8,11 @@ public class User extends BaseEntity {
   private UserRole role;
   private String login;
   private String passwordHash;
+  private boolean emailVerified;
 
-  public User () { }
+  public User () { 
+    this.emailVerified = false;
+  }
 
   public void setName (String newVar) {
     name = newVar;
@@ -73,9 +71,18 @@ public class User extends BaseEntity {
     return passwordHash;
   }
 
+  public boolean isEmailVerified() {
+    return emailVerified;
+  }
+
+  public void setEmailVerified(boolean emailVerified) {
+    this.emailVerified = emailVerified;
+  }
+
   @Override
   public String toString() {
-    return String.format("User{id=%d, login=%s, name=%s %s, role=%s}", id, login, name, surname, role);
+    return String.format("User{id=%d, login=%s, name=%s %s, role=%s, verified=%s}", 
+      id, login, name, surname, role, emailVerified);
   }
 
 }

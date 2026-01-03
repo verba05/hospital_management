@@ -8,13 +8,23 @@ public class Hospital extends BaseEntity {
   private HospitalDoctorsLazyLoad doctors;
   private Admin admin;
   private String name;
+  
   private String address;
+  
+  private String streetAddress;
+  private String city;
+  private String stateProvince;
+  private String postalCode;
+  private String country;
+  private int appointmentIntervalMinutes;
 
   public Hospital () {
-    doctors = new HospitalDoctorsLazyLoad(this);
   }
 
   public List<Doctor> getDoctors () {
+    if (doctors == null) {
+      doctors = new HospitalDoctorsLazyLoad(getId());
+    }
     return doctors.get();
   }
 
@@ -34,12 +44,84 @@ public class Hospital extends BaseEntity {
     return name;
   }
 
+  @Deprecated
   public void setAddress (String newVar) {
     address = newVar;
   }
 
+  @Deprecated
   public String getAddress () {
     return address;
+  }
+
+  public void setStreetAddress(String streetAddress) {
+    this.streetAddress = streetAddress;
+  }
+
+  public String getStreetAddress() {
+    return streetAddress;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setStateProvince(String stateProvince) {
+    this.stateProvince = stateProvince;
+  }
+
+  public String getStateProvince() {
+    return stateProvince;
+  }
+
+  public void setPostalCode(String postalCode) {
+    this.postalCode = postalCode;
+  }
+
+  public String getPostalCode() {
+    return postalCode;
+  }
+
+  public void setCountry(String country) {
+    this.country = country;
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public void setAppointmentIntervalMinutes(int appointmentIntervalMinutes) {
+    this.appointmentIntervalMinutes = appointmentIntervalMinutes;
+  }
+
+  public int getAppointmentIntervalMinutes() {
+    return appointmentIntervalMinutes;
+  }
+
+  public String getFullAddress() {
+    StringBuilder sb = new StringBuilder();
+    if (streetAddress != null) sb.append(streetAddress);
+    if (city != null) {
+      if (sb.length() > 0) sb.append(", ");
+      sb.append(city);
+    }
+    if (postalCode != null) {
+      if (sb.length() > 0) sb.append(" ");
+      sb.append(postalCode);
+    }
+    if (stateProvince != null) {
+      if (sb.length() > 0) sb.append(", ");
+      sb.append(stateProvince);
+    }
+    if (country != null && !country.equals("Poland")) {
+      if (sb.length() > 0) sb.append(", ");
+      sb.append(country);
+    }
+    return sb.toString();
   }
 
   public int getId () {
@@ -68,7 +150,7 @@ public class Hospital extends BaseEntity {
 
   @Override
   public String toString() {
-    return String.format("Hospital{id=%d, name=%s, address=%s}", getId(), name, address);
+    return String.format("Hospital{id=%d, name=%s, address=%s}", getId(), name, getFullAddress());
   }
 
 }

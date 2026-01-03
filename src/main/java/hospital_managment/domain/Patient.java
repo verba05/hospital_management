@@ -11,15 +11,19 @@ public class Patient extends User {
   private PatientAppointmentsLazyLoad appointments;
 
   public Patient () {
-    treatments = new PatientTreatmentsLazyLoad(this);
-    appointments = new PatientAppointmentsLazyLoad(this);
   }
 
   public List<Treatment> getTreatments () {
+    if (treatments == null) {
+      treatments = new PatientTreatmentsLazyLoad(getId());
+    }
     return treatments.get();
   }
 
   public List<Appointment> getAppointments () {
+    if (appointments == null) {
+      appointments = new PatientAppointmentsLazyLoad(getId());
+    }
     return appointments.get();
   }
 
@@ -36,7 +40,7 @@ public class Patient extends User {
     a.setDoctor(doctor);
     a.setDate(date);
     a.setNotes("Requested by patient");
-    a.setStatus(Appointment.AppointmentStatus.REQUESTED);
+    a.setStatus(Appointment.AppointmentStatus.SCHEDULED);
     getAppointments().add(a);
     incrementVersion();
     return a;

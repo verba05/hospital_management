@@ -1,65 +1,102 @@
 package hospital_managment.domain;
 
+import hospital_managment.lazyload.AppointmentPatientLazyLoad;
+import hospital_managment.lazyload.AppointmentDoctorLazyLoad;
+import hospital_managment.lazyload.AppointmentTreatmentLazyLoad;
 import java.time.*;
 
 public class Appointment extends BaseEntity {
 
-  private Patient patient;
-  private Doctor doctor;
-  private Treatment treatment;
+  private AppointmentPatientLazyLoad patientLazy;
+  private AppointmentDoctorLazyLoad doctorLazy;
+  private AppointmentTreatmentLazyLoad treatmentLazy;
   private LocalDate appointmentDate;
   private LocalTime appointmentTime;
-  private String rejectedReason;
-  private String fallbackAction;
-  private String fallbackTargetId;
   private String doctorNotes;
-  private String patientNotes;
-  //TODO finelise patientNotes
-  private AppointmentStatus status = AppointmentStatus.REQUESTED;
+  private AppointmentStatus status = AppointmentStatus.SCHEDULED;
 
-  public enum AppointmentStatus { REQUESTED, COMPLETED, CANCELLED }
+  public enum AppointmentStatus { SCHEDULED, NO_SHOW, COMPLETED, CANCELED }
 
   public Appointment() {}  
 
   public Appointment(Patient patient, LocalDate date, LocalTime time, String doctorNotes, Doctor doctor) {
-    Appointment a = new Appointment();
-    a.patient = patient;
-    a.appointmentDate = date;
-    a.appointmentTime = time;
-    a.doctorNotes = doctorNotes;
-    a.status = AppointmentStatus.REQUESTED;
+    this.setPatient(patient);
+    this.setDoctor(doctor);
+    this.appointmentDate = date;
+    this.appointmentTime = time;
+    this.doctorNotes = doctorNotes;
+    this.status = AppointmentStatus.SCHEDULED;
   }
 
-  public void setPatient (Patient newVar) {
-    patient = newVar;
+  public void setPatient (Patient patient) {
+    if (patient != null) {
+      this.patientLazy = new AppointmentPatientLazyLoad(patient.getId());
+      this.patientLazy.set(patient);
+    } else {
+      this.patientLazy = null;
+    }
+  }
+  
+  public void setPatientId(Integer patientId) {
+    if (patientId != null) {
+      this.patientLazy = new AppointmentPatientLazyLoad(patientId);
+    } else {
+      this.patientLazy = null;
+    }
   }
 
   public Patient getPatient () {
-    return patient;
+    return patientLazy != null ? patientLazy.get() : null;
   }
 
-  public void setDoctor (Doctor newVar) {
-    doctor = newVar;
+  public void setDoctor (Doctor doctor) {
+    if (doctor != null) {
+      this.doctorLazy = new AppointmentDoctorLazyLoad(doctor.getId());
+      this.doctorLazy.set(doctor);
+    } else {
+      this.doctorLazy = null;
+    }
+  }
+  
+  public void setDoctorId(Integer doctorId) {
+    if (doctorId != null) {
+      this.doctorLazy = new AppointmentDoctorLazyLoad(doctorId);
+    } else {
+      this.doctorLazy = null;
+    }
   }
 
   public Doctor getDoctor () {
-    return doctor;
+    return doctorLazy != null ? doctorLazy.get() : null;
+  }
+  
+  public Integer getPatientId() {
+    return patientLazy != null ? patientLazy.getId() : null;
+  }
+  
+  public Integer getDoctorId() {
+    return doctorLazy != null ? doctorLazy.getId() : null;
   }
 
-  public void setTreatment (Treatment newVar) {
-    treatment = newVar;
+  public void setTreatment (Treatment treatment) {
+    if (treatment != null) {
+      this.treatmentLazy = new AppointmentTreatmentLazyLoad(this.getId());
+      this.treatmentLazy.set(treatment);
+    } else {
+      this.treatmentLazy = null;
+    }
+  }
+  
+  public void setTreatmentByAppointmentId(Integer appointmentId) {
+    if (appointmentId != null) {
+      this.treatmentLazy = new AppointmentTreatmentLazyLoad(appointmentId);
+    } else {
+      this.treatmentLazy = null;
+    }
   }
 
   public Treatment getTreatment () {
-    return treatment;
-  }
-
-  public void setPatientNotes(String newVar){
-    patientNotes = newVar;
-  }
-
-  public String getPatientNotes(){
-    return patientNotes;
+    return treatmentLazy != null ? treatmentLazy.get() : null;
   }
 
   public void setDate (LocalDate newVar) {
@@ -74,11 +111,11 @@ public class Appointment extends BaseEntity {
     return appointmentDate;
   }
 
-  public void setTime (LocalDate newTime) {
+  public void setTime (LocalTime newTime) {
     if (newTime != null) {
-      this.appointmentDate = newTime;
+      this.appointmentTime = newTime;
     } else {
-      this.appointmentDate = LocalDate.now();
+      this.appointmentTime = LocalTime.now();
     }
   }
 
@@ -107,18 +144,16 @@ public class Appointment extends BaseEntity {
   }
 
   public void cancel() {
-    status = AppointmentStatus.CANCELLED;
+    status = AppointmentStatus.CANCELED;
   }
-
-  public String getRejectedReason() { return rejectedReason; }
-  public String getFallbackAction() { return fallbackAction; }
-  public String getFallbackTargetId() { return fallbackTargetId; }
-
+  
   @Override
   public String toString() {
+    Patient p = getPatient();
+    Doctor d = getDoctor();
     return String.format("Appointment{id=%d date=%s time=%s patient=%s doctor=%s status=%s}", id,
-      appointmentDate.toString(), appointmentTime.toString(), (patient == null ? "null" : patient.getId()),
-      (doctor == null ? "null" : doctor.getId()), status);
+      appointmentDate.toString(), appointmentTime.toString(), (p == null ? "null" : p.getId()),
+      (d == null ? "null" : d.getId()), status);
   }
 
 }

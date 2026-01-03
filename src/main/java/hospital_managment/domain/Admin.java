@@ -1,17 +1,32 @@
 package hospital_managment.domain;
 
+import hospital_managment.lazyload.AdminHospitalLazyLoad;
+
 public class Admin extends User {
 
-  public Hospital hospital;
+  private AdminHospitalLazyLoad hospitalLazy;
 
   public Admin () { }
 
-  public void setHospital (Hospital newVar) {
-    hospital = newVar;
+  public void setHospital (Hospital hospital) {
+    if (hospital != null) {
+      this.hospitalLazy = new AdminHospitalLazyLoad(hospital.getId());
+      this.hospitalLazy.set(hospital);
+    } else {
+      this.hospitalLazy = null;
+    }
+  }
+  
+  public void setHospitalId(Integer hospitalId) {
+    if (hospitalId != null) {
+      this.hospitalLazy = new AdminHospitalLazyLoad(hospitalId);
+    } else {
+      this.hospitalLazy = null;
+    }
   }
 
   public Hospital getHospital () {
-    return hospital;
+    return hospitalLazy != null ? hospitalLazy.get() : null;
   }
 
   @Override

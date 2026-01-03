@@ -1,38 +1,60 @@
 package hospital_managment.domain;
 
 import hospital_managment.lazyload.DoctorAppointmentsLazyLoad;
+import hospital_managment.lazyload.DoctorHospitalLazyLoad;
 import java.time.*;
 import java.util.*;
 
 public class Doctor extends User {
 
-  private DoctorSchedule schedule;
-  private Hospital hospital;
+  private EnumMap<DayOfWeek,TimeRange> weekSchedule;
+  private DoctorHospitalLazyLoad hospitalLazy;
   private DoctorAppointmentsLazyLoad appointments;
   private String specialty;
   private int office;
+  
+  public transient String scheduleStartTime;
+  public transient String scheduleEndTime;
+  public transient List<Integer> scheduleWorkingDays;
 
   public Doctor () {
-    appointments = new DoctorAppointmentsLazyLoad(this);
+    weekSchedule = null;
   }
 
-  public void setSchedule (DoctorSchedule newVar) {
-    schedule = newVar;
+  // Week schedule methods
+  public void setWeekSchedule (EnumMap<DayOfWeek,TimeRange> newVar) {
+    weekSchedule = newVar;
   }
 
-  public DoctorSchedule getSchedule () {
-    return schedule;
+  public EnumMap<DayOfWeek,TimeRange> getWeekSchedule () {
+    return weekSchedule;
   }
 
-  public void setHospital (Hospital newVar) {
-    hospital = newVar;
+  public void setHospital (Hospital hospital) {
+    if (hospital != null) {
+      this.hospitalLazy = new DoctorHospitalLazyLoad(hospital.getId());
+      this.hospitalLazy.set(hospital);
+    } else {
+      this.hospitalLazy = null;
+    }
+  }
+  
+  public void setHospitalId(Integer hospitalId) {
+    if (hospitalId != null) {
+      this.hospitalLazy = new DoctorHospitalLazyLoad(hospitalId);
+    } else {
+      this.hospitalLazy = null;
+    }
   }
 
   public Hospital getHospital () {
-    return hospital;
+    return hospitalLazy != null ? hospitalLazy.get() : null;
   }
 
   public List<Appointment> getAppointments () {
+    if (appointments == null) {
+      appointments = new DoctorAppointmentsLazyLoad(getId());
+    }
     return appointments.get();
   }
 
@@ -59,7 +81,7 @@ public class Doctor extends User {
     a.setDoctor(this);
     a.setDate(date);
     a.setNotes("Follow-up from appointment " + previous.getId());
-    a.setStatus(Appointment.AppointmentStatus.REQUESTED);
+    a.setStatus(Appointment.AppointmentStatus.SCHEDULED);
     getAppointments().add(a);
     return a;
   }
@@ -77,11 +99,6 @@ public class Doctor extends User {
     appointment.setTreatment(t);
     return t;
   }
-
-  // public boolean isAvailable(LocalDate date, LocalTime time) {
-  //   if (schedule == null) return true;
-  //   return schedule.isAvailable(date, time);
-  // }
 
   public void addAppointment(Appointment a) {
     if (a == null) return;
