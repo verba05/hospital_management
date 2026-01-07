@@ -3,7 +3,6 @@ package hospital_managment.controller;
 import hospital_managment.domain.Doctor;
 import hospital_managment.domain.Hospital;
 import hospital_managment.domain.Admin;
-import hospital_managment.domain.Appointment;
 import hospital_managment.domain.EmailVerificationToken;
 import hospital_managment.domain.TimeRange;
 import hospital_managment.service.DoctorService;
@@ -189,35 +188,7 @@ public class DoctorController extends BaseController {
         sendSuccess(response, Map.of("message", "Doctor deleted successfully"));
     }
 
-    public void getDoctorAppointments(HttpServletRequest request, HttpServletResponse response, int doctorId) throws IOException {
-        // Only the doctor themselves can view their appointments
-        if (!isDoctor() || !isCurrentUser(doctorId)) {
-            sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only view your own appointments");
-            return;
-        }
-
-        List<Appointment> appointments = doctorService.getDoctorAppointments(doctorId);
-        List<Map<String, Object>> appointmentData = appointments.stream()
-            .map(a -> {
-                Map<String, Object> data = new HashMap<>();
-                data.put("id", a.getId());
-                data.put("patientId", a.getPatient().getId());
-                data.put("patientName", a.getPatient().getName() + " " + a.getPatient().getSurname());
-                data.put("date", a.getDate().toString());
-                if (a.getTime() != null) {
-                    data.put("time", a.getTime().toString());
-                }
-                data.put("status", a.getStatus().toString());
-                data.put("notes", a.getNotes());
-                return data;
-            })
-            .collect(Collectors.toList());
-        
-        sendSuccess(response, appointmentData);
-    }
-
     public void getDoctorSchedule(HttpServletRequest request, HttpServletResponse response, int doctorId) throws IOException {
-        // For doctors, always use their own ID from the token
         int effectiveDoctorId = doctorId;
         if (isDoctor()) {
             effectiveDoctorId = getCurrentUserId();
@@ -233,7 +204,6 @@ public class DoctorController extends BaseController {
             return;
         }
 
-        // Allow admins to view doctor schedules in their hospital
         if (isAdmin() && !canManageDoctor(doctor)) {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only view schedules for doctors in your hospital");
             return;
@@ -242,7 +212,6 @@ public class DoctorController extends BaseController {
         Map<String, Object> scheduleData = new HashMap<>();
         scheduleData.put("doctorId", effectiveDoctorId);
         
-        // Map week schedule
         if (doctor.getWeekSchedule() != null) {
             Map<String, Map<String, String>> weekSchedule = new HashMap<>();
             doctor.getWeekSchedule().forEach((day, timeRange) -> {
@@ -262,7 +231,6 @@ public class DoctorController extends BaseController {
     }
 
     public void getCurrentDoctorSchedule(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Get doctor ID from the JWT token
         if (!isDoctor()) {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "Only doctors can access this endpoint");
             return;
@@ -276,7 +244,6 @@ public class DoctorController extends BaseController {
             return;
         }
 
-        // Convert week schedule to array format for frontend
         List<Map<String, Object>> scheduleArray = new ArrayList<>();
         
         if (doctor.getWeekSchedule() != null && !doctor.getWeekSchedule().isEmpty()) {

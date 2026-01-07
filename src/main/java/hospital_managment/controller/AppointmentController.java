@@ -50,16 +50,8 @@ public class AppointmentController extends BaseController {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only view your own appointments");
             return;
         }
-
+        System.out.println("Fetching appointments for doctor from by doctor");
         List<Appointment> appointments = appointmentService.getAppointmentsByDoctor(doctorId);
-        List<Map<String, Object>> data = appointments.stream()
-            .map(this::mapAppointmentToResponse)
-            .collect(Collectors.toList());
-        sendSuccess(response, data);
-    }
-
-    public void getAppointmentsByPatientAndDoctor(HttpServletRequest request, HttpServletResponse response, int patientId, int doctorId) throws IOException {
-        List<Appointment> appointments = appointmentService.getAppointmentsByPatientAndDoctor(patientId, doctorId);
         List<Map<String, Object>> data = appointments.stream()
             .map(this::mapAppointmentToResponse)
             .collect(Collectors.toList());
@@ -182,7 +174,7 @@ public class AppointmentController extends BaseController {
 
         switch (status != null ? status.toUpperCase() : "") {
             case "COMPLETED":
-                appointmentService.scheduleAppointment(appointment);
+                appointmentService.completeAppointment(appointment);
                 break;
             case "NO_SHOW":
                 appointmentService.noShowAppointment(appointment);

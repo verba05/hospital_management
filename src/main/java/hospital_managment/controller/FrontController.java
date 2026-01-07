@@ -178,13 +178,6 @@ public class FrontController extends HttpServlet {
                 }
                 break;
 
-            case "users":
-                if ("GET".equals(method) && pathParts.length > 1) {
-                    int userId = Integer.parseInt(pathParts[1]);
-                    userController.getUser(request, response, userId);
-                }
-                break;
-
             case "patients":
                 if ("GET".equals(method) && pathParts.length > 1) {
                     int patientId = Integer.parseInt(pathParts[1]);
@@ -226,9 +219,7 @@ public class FrontController extends HttpServlet {
                     doctorController.getCurrentDoctorSchedule(request, response);
                 } else if ("GET".equals(method) && pathParts.length > 1) {
                     int doctorId = Integer.parseInt(pathParts[1]);
-                    if (pathParts.length > 2 && "appointments".equals(pathParts[2])) {
-                        doctorController.getDoctorAppointments(request, response, doctorId);
-                    } else if (pathParts.length > 2 && "appointment-slots".equals(pathParts[2])) {
+                    if (pathParts.length > 2 && "appointment-slots".equals(pathParts[2])) {
                         doctorController.getAvailableAppointmentSlots(request, response, doctorId);
                     } else if (pathParts.length > 2 && "schedule".equals(pathParts[2])) {
                         doctorController.getDoctorSchedule(request, response, doctorId);
@@ -251,11 +242,7 @@ public class FrontController extends HttpServlet {
                     String patientIdParam = request.getParameter("patientId");
                     String doctorIdParam = request.getParameter("doctorId");
                     
-                    if (patientIdParam != null && doctorIdParam != null) {
-                        int patientId = Integer.parseInt(patientIdParam);
-                        int doctorId = Integer.parseInt(doctorIdParam);
-                        appointmentController.getAppointmentsByPatientAndDoctor(request, response, patientId, doctorId);
-                    } else if (patientIdParam != null) {
+                    if (patientIdParam != null) {
                         int patientId = Integer.parseInt(patientIdParam);
                         appointmentController.getAppointmentsByPatient(request, response, patientId);
                     } else if (doctorIdParam != null) {

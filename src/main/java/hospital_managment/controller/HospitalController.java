@@ -79,6 +79,10 @@ public class HospitalController extends BaseController {
     }
 
     public void updateHospital(HttpServletRequest request, HttpServletResponse response, int hospitalId) throws IOException {
+         if (!isAdmin()) {
+            sendError(response, HttpServletResponse.SC_FORBIDDEN, "Only admin can edit hospital");
+            return;
+        }
         Hospital hospital = hospitalService.getHospitalById(hospitalId);
         if (hospital == null) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, "Hospital not found");

@@ -1,6 +1,5 @@
 package hospital_managment.controller;
 
-import hospital_managment.domain.User;
 import hospital_managment.domain.Patient;
 import hospital_managment.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,30 +33,8 @@ public class UserController extends BaseController {
         sendSuccess(response, Map.of("message", "Password changed successfully"));
     }
 
-    public void getUser(HttpServletRequest request, HttpServletResponse response, int userId) throws IOException {
-        if (!isCurrentUser(userId) && !isDoctor()) {
-            sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only view your own information");
-            return;
-        }
-
-        User user = userService.getUserById(userId);
-        
-        if (user != null) {
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("id", user.getId());
-            userData.put("login", user.getLogin());
-            userData.put("name", user.getName());
-            userData.put("surname", user.getSurname());
-            userData.put("email", user.getEmail());
-            userData.put("role", user.getRole().toString());
-            sendSuccess(response, userData);
-        } else {
-            sendError(response, HttpServletResponse.SC_NOT_FOUND, "User not found");
-        }
-    }
-
     public void getPatient(HttpServletRequest request, HttpServletResponse response, int patientId) throws IOException {
-        if (!isCurrentUser(patientId) && !isDoctor()) {
+        if ((!isCurrentUser(patientId) || !isPatient()) && !isDoctor()) {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "Access denied");
             return;
         }

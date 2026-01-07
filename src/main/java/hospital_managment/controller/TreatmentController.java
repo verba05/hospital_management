@@ -57,7 +57,6 @@ public class TreatmentController extends BaseController {
 
     @SuppressWarnings("unchecked")
     public void createTreatment(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        // Only doctors can create treatments
         if (!isDoctor()) {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "Only doctors can create treatments");
             return;
@@ -99,9 +98,23 @@ public class TreatmentController extends BaseController {
     }
 
     public void updateTreatment(HttpServletRequest request, HttpServletResponse response, int treatmentId) throws IOException {
+        // Only doctors can update treatments
+        if (!isDoctor()) {
+            sendError(response, HttpServletResponse.SC_FORBIDDEN, "Only doctors can update treatments");
+            return;
+        }
+
         Treatment treatment = treatmentService.getTreatmentById(treatmentId);
         if (treatment == null) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, "Treatment not found");
+            return;
+        }
+
+        // Verify the doctor is updating their own treatment (check via appointment)
+        if (treatment.getAppointment() != null && 
+            treatment.getAppointment().getDoctor() != null && 
+            !isCurrentUser(treatment.getAppointment().getDoctor().getId())) {
+            sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only update your own treatments");
             return;
         }
 
