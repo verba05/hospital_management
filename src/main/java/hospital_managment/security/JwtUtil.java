@@ -1,5 +1,6 @@
 package hospital_managment.security;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -7,8 +8,9 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 
 public class JwtUtil {
-    private static final String SECRET_KEY = "HgkdOihm592NbpwhQpumGjKLGJHdflkgnsdkGGkglksjgjkldfjfsdoiiugsehGkjdfg9oHIGU";
-    private static final long EXPIRATION_TIME = 8 * 60 * 60 * 1000;
+    private static final Dotenv dotenv = Dotenv.load();
+    private static final String SECRET_KEY = dotenv.get("JWT_SECRET_KEY");
+    private static final long EXPIRATION_TIME = Long.parseLong(dotenv.get("JWT_EXPIRATION_TIME"));
     private static final SecretKey KEY = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     public static String generateToken(int userId, String role) {
