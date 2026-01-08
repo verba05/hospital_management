@@ -30,7 +30,6 @@ public class Patient extends User {
   public void addTreatment(Treatment t) {
     if (t == null) return;
     getTreatments().add(t);
-    incrementVersion();
   }
 
   public Appointment requestAppointment(Doctor doctor, LocalDate date) {
@@ -42,7 +41,6 @@ public class Patient extends User {
     a.setNotes("Requested by patient");
     a.setStatus(Appointment.AppointmentStatus.SCHEDULED);
     getAppointments().add(a);
-    incrementVersion();
     return a;
   }
 

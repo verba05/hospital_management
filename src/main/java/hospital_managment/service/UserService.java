@@ -27,7 +27,7 @@ public class UserService {
         }
         
         User user = users.get(0);
-        if (user.checkPassword(passwordHash)) {
+        if (user.checkPassword(passwordHash) && user.isEmailVerified()) {
             return user;
         }
         

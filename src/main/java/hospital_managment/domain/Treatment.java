@@ -79,13 +79,11 @@ public class Treatment extends BaseEntity {
     if (med == null) return;
     if (medications == null) medications = new Vector<>();
     medications.add(med);
-    incrementVersion();
   }
 
   public boolean removeMedication(String med) {
     if (medications == null) return false;
     boolean removed = medications.remove(med);
-    if (removed) incrementVersion();
     return removed;
   }
 

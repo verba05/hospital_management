@@ -70,50 +70,39 @@ public class DoctorController extends BaseController {
         String login = (String) data.get("login");
         String password = (String) data.get("password");
         String specialty = (String) data.get("specialty");
+        int office = ((Double) data.get("office")).intValue();
         
-        int hospitalId;
-        try {
-            hospitalId = Integer.parseInt(data.get("hospitalId").toString());
-        } catch (Exception e) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid hospital ID format");
+        Admin currentAdmin = getCurrentAdmin();
+        if (currentAdmin == null) {
+            sendError(response, HttpServletResponse.SC_FORBIDDEN, "Admin not found");
             return;
         }
-
-        int office;
-        try {
-            office = Integer.parseInt(data.get("office").toString());
-        } catch (Exception e) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid office format - must be a number");
+        
+        if (currentAdmin.getHospital() == null) {
+            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Admin is not assigned to any hospital");
             return;
         }
+        
+        Hospital hospital = currentAdmin.getHospital();
         
         String startTime = (String) data.get("startTime");
         String endTime = (String) data.get("endTime");
         List<Integer> workingDays = new ArrayList<>();
         if (data.get("workingDays") instanceof List) {
             for (Object day : (List<?>) data.get("workingDays")) {
-                workingDays.add(Integer.parseInt(day.toString()));
+                if (day instanceof Double) {
+                    workingDays.add(((Double) day).intValue());
+                } else if (day instanceof Integer) {
+                    workingDays.add((Integer) day);
+                } else {
+                    workingDays.add(Integer.parseInt(day.toString()));
+                }
             }
         }
         
         if (startTime == null || endTime == null || workingDays.isEmpty()) {
             sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Schedule information (startTime, endTime, workingDays) is required");
             return;
-        }
-
-        Hospital hospital = hospitalService.getHospitalById(hospitalId);
-        if (hospital == null) {
-            sendError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid hospital ID");
-            return;
-        }
-
-        Admin currentAdmin = getCurrentAdmin();
-        if (currentAdmin != null && currentAdmin.getHospital() != null) {
-            if (currentAdmin.getHospital().getId() != hospitalId) {
-                sendError(response, HttpServletResponse.SC_FORBIDDEN, 
-                    "You can only create doctors for your own hospital");
-                return;
-            }
         }
 
         Doctor doctor = doctorService.createDoctor(name, surname, email, login, password, hospital, specialty, office, startTime, endTime, workingDays);

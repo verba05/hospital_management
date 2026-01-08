@@ -103,7 +103,6 @@ public class Doctor extends User {
   public void addAppointment(Appointment a) {
     if (a == null) return;
     getAppointments().add(a);
-    incrementVersion();
   }
 
   @Override

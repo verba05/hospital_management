@@ -68,6 +68,7 @@ public class DoctorService {
                                String passwordHash, Hospital hospital, String specialty, int office,
                                String startTime, String endTime, List<Integer> workingDays) {
         Doctor doctor = new Doctor();
+        try{
         doctor.setName(name);
         doctor.setSurname(surname);
         doctor.setEmail(email);
@@ -78,6 +79,9 @@ public class DoctorService {
         doctor.setHospital(hospital);
         doctor.setSpecialty(specialty);
         doctor.setOffice(office);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
         
         doctor.scheduleStartTime = startTime;
         doctor.scheduleEndTime = endTime;

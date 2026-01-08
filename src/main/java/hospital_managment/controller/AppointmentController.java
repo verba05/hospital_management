@@ -50,7 +50,7 @@ public class AppointmentController extends BaseController {
             sendError(response, HttpServletResponse.SC_FORBIDDEN, "You can only view your own appointments");
             return;
         }
-        System.out.println("Fetching appointments for doctor from by doctor");
+        
         List<Appointment> appointments = appointmentService.getAppointmentsByDoctor(doctorId);
         List<Map<String, Object>> data = appointments.stream()
             .map(this::mapAppointmentToResponse)

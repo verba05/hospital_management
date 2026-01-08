@@ -118,8 +118,7 @@ public class FrontController extends HttpServlet {
 
             try {
                 UnitOfWorkContext.commit();
-            } catch (IllegalStateException e) {
-            } catch (Exception e) {
+            }catch (Exception e) {
                 e.printStackTrace();
                 throw e;
             }

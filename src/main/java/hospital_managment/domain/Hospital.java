@@ -131,13 +131,11 @@ public class Hospital extends BaseEntity {
   public void addDoctor(Doctor d) {
     if (d == null) return;
     getDoctors().add(d);
-    incrementVersion();
   }
 
   public boolean removeDoctor(Doctor d) {
     if (d == null) return false;
     boolean removed = getDoctors().remove(d);
-    if (removed) incrementVersion();
     return removed;
   }
 

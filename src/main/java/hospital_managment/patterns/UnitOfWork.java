@@ -44,7 +44,7 @@ public class UnitOfWork {
     }
 
     public void registerDirty(BaseEntity entity) {
-        entity.incrementVersion();
+      //  entity.incrementVersion();
         dirtyEntities.computeIfAbsent(entity.getClass(), k -> new ArrayList<>()).add(entity);
     }
 
