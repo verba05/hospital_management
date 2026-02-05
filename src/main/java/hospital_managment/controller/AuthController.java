@@ -77,7 +77,7 @@ public class AuthController extends BaseController {
         }
         
         Map<String, Object> result = new HashMap<>();
-        result.put("message", "Registration successful. Please check your email (or console) to verify your account.");
+        result.put("message", "Registration successful. Please check your email to verify your account.");
         sendSuccess(response, result);
     }
 

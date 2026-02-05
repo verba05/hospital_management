@@ -26,8 +26,8 @@ public class AuthContext {
 
     public static String extractToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.substring(7);
+        if (authHeader != null && !authHeader.isEmpty()) {
+            return authHeader;
         }
         return null;
     }

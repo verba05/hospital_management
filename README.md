@@ -6,17 +6,8 @@ and business logic implemented from scratch using Java core libraries and extern
 ## Main Project Functionalities
 
 - **Patient Management** - Patients can register, log in, manage their profiles, and book appointments with doctors
-- **Doctor Management** - Doctors can handle appointmentsmaintain treatment records
+- **Doctor Management** - Doctors can handle appointments, maintain treatment records
 - **Hospital Administration** - Hospital administrators can manage hospital information and manage doctors
-
-### Enterprise Design Patterns
-- Repository
-- Unit of Work
-- Identity Map
-- Lazy Load 
-- Query Object
-- Front Controller
-- Registry
 
 ## Installation
 
@@ -81,23 +72,17 @@ curl -X POST http://localhost:8080/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"login":"patient1", "password":"<sha256-hash-of-your-password>"}'
 
-# Example response:
-# {"token":"abcde...", "userId":1, "role":"PATIENT"}
-
 # Register a new patient
 curl -X POST http://localhost:8080/api/register \
   -H "Content-Type: application/json" \
   -d '{"name": "John", "surname": "Doe", "email": "john.doe@example.com", "login": "johndoe", "password": "<sha256-hash-of-your-password>"}'
-# Example response:
-# {"userId":2,"login":"johndoe","role":"PATIENT"}
 ```
 
 ### Protected Endpoints
 Use token in Authorization header. For example:
 ```bash
-#
 curl -X GET http://localhost:8080/api/patients/me \
-  -H "Authorization: Bearer abcde..."
+  -H "Authorization: <your-jwt-token>"
 ```
 ## Predefined Accounts
 
