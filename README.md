@@ -36,7 +36,7 @@ SUPABASE_PASSWORD=your_database_password
 JWT_SECRET_KEY=your-secret-key-at-least-64-characters
 JWT_EXPIRATION_TIME=28800000
 
-# Email Configuration (Optional)
+# Email Configuration
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USERNAME=your-email@gmail.com
